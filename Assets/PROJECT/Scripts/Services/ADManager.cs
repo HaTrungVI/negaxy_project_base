@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using QuocAnh.pattern;
@@ -58,7 +59,7 @@ public class ADManager : Singleton<ADManager>
 #if ODIN_INSPECTOR
     [ShowIf("useInterAd")]
 #endif
-    public int _internRetryAttempt; // atemp of re opening intern ads
+    private int _internRetryAttempt; // atemp of re opening intern ads
 
     #endregion
 
@@ -66,12 +67,19 @@ public class ADManager : Singleton<ADManager>
     #region REWARD AD VAR
 
 #if ODIN_INSPECTOR
+    [ShowIf("userRewardAd")]
+    [Header("REWARD AD"), Space(10)]
+#endif
 
+#if ODIN_INSPECTOR
     [ShowIf("userRewardAd")]
 #endif
-    string rewardAdUnitId = "1882960987cccae9";
+    public string rewardAdUnitId;
 
-    int _rewardRetryAttemp;
+    public Action rewardAction;
+
+    private int _rewardRetryAttemp;
+
 
     #endregion
 
@@ -126,6 +134,7 @@ public class ADManager : Singleton<ADManager>
             EventDispatcherExtension.RegisterListener(EventID.Ad_Init, (n) => IDInitiation());
             EventDispatcherExtension.RegisterListener(EventID.Ad_BannerCall, (n) => BannerAdCall());
             EventDispatcherExtension.RegisterListener(EventID.Ad_InternCall, (n) => InterstitialCall());
+            EventDispatcherExtension.RegisterListener(EventID.Ad_RewardCall, (n) => RewardCall());
 
             #endregion
 
@@ -230,7 +239,7 @@ public class ADManager : Singleton<ADManager>
 
     //======================================= REWARD INITIATION ==================================
 
-    public void LoadRewardedAd()
+    public void RewardCall()
     {
         MaxSdk.LoadRewardedAd(rewardAdUnitId);
     }
@@ -259,7 +268,7 @@ public class ADManager : Singleton<ADManager>
     private void OnRewardedAdFailedToDisplayEvent(string adUnitId, MaxSdkBase.ErrorInfo errorInfo, MaxSdkBase.AdInfo adInfo)
     {
         // Rewarded ad failed to display. AppLovin recommends that you load the next ad.
-        LoadRewardedAd();
+        RewardCall();
     }
 
     private void OnRewardedAdClickedEvent(string adUnitId, MaxSdkBase.AdInfo adInfo) { }
@@ -273,6 +282,9 @@ public class ADManager : Singleton<ADManager>
     private void OnRewardedAdReceivedRewardEvent(string adUnitId, MaxSdk.Reward reward, MaxSdkBase.AdInfo adInfo)
     {
         // The rewarded ad displayed and the user should receive the reward.
+
+        //if action for reward does exist give player reward
+        if (rewardAction != null) rewardAction();
     }
 
     private void OnRewardedAdRevenuePaidEvent(string adUnitId, MaxSdkBase.AdInfo adInfo)
