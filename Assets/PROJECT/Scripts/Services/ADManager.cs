@@ -8,167 +8,38 @@ using UnityEngine;
 public class ADManager : Singleton<ADManager>
 {
 
-    #region MANDATORY ID
-
-    [Header("MANDATORY AD ID ")]
-    public string SDKKey; // SDK key
-    public string UserID; // user id
-    public bool useBannerAd; // whether to use banner ad
-    public bool useInterAd; // whether to use intern ad
-    public bool userRewardAd; // whether to use reward ad
-
-    #endregion
-
-
     #region BANNER AD VAR
 
-#if ODIN_INSPECTOR
-    [ShowIf("useBannerAd")]
-    [Header("BANNER AD"), Space(10)]
-#endif
-
-#if ODIN_INSPECTOR
-    [ShowIf("useBannerAd")]
-#endif
     public string bannerAdUnitId; // banner ad id -> Retrieve the ID from your account
-
-#if ODIN_INSPECTOR
-    [ShowIf("useBannerAd")]
-#endif
     public BannerPos bannerPosition; // position of banner
-
-#if ODIN_INSPECTOR
-    [ShowIf("useBannerAd")]
-#endif
     public Color bannerColor; // color of banner background
-    #endregion
 
+    #endregion
 
     #region INTERN AD VAR
-
-#if ODIN_INSPECTOR
-    [ShowIf("useInterAd")]
-    [Header("INTERN AD"), Space(10)]
-#endif
-
-#if ODIN_INSPECTOR
-    [ShowIf("useInterAd")]
-#endif
     public string internAdID; // intern ad ID
-
-#if ODIN_INSPECTOR
-    [ShowIf("useInterAd")]
-#endif
     private int _internRetryAttempt; // atemp of re opening intern ads
-
     #endregion
-
 
     #region REWARD AD VAR
-
-#if ODIN_INSPECTOR
-    [ShowIf("userRewardAd")]
-    [Header("REWARD AD"), Space(10)]
-#endif
-
-#if ODIN_INSPECTOR
-    [ShowIf("userRewardAd")]
-#endif
-    public string rewardAdUnitId;
-
+    public string rewardAdId;
     public Action rewardAction;
-
     private int _rewardRetryAttemp;
-
-
     #endregion
 
-
-    void Awake()
+    public override void Awake()
     {
-        //initiate all necceassary SDK
-        IDInitiation();
-    }
-
-    // Start is called before the first frame update
-    void Start()
-    {
-        //event when sdk of applovin have been initialized then it -
-        //will do all task that given below
-        MaxSdkCallbacks.OnSdkInitializedEvent += SDKConfig =>
-        {
-            #region LOAD AD ON START - DEBUG
-
-            //initiate banner ad 
-            BannerAdCall();
-            InterstitialCall();
-            #endregion
-
-            #region INTERN AD EVENT SETUP
-
-            MaxSdkCallbacks.Interstitial.OnAdLoadedEvent += OnInterstitialLoadedEvent;
-            MaxSdkCallbacks.Interstitial.OnAdLoadFailedEvent += OnInterstitialLoadFailedEvent;
-            MaxSdkCallbacks.Interstitial.OnAdDisplayedEvent += OnInterstitialDisplayedEvent;
-            MaxSdkCallbacks.Interstitial.OnAdClickedEvent += OnInterstitialClickedEvent;
-            MaxSdkCallbacks.Interstitial.OnAdHiddenEvent += OnInterstitialHiddenEvent;
-            MaxSdkCallbacks.Interstitial.OnAdDisplayFailedEvent += OnInterstitialAdFailedToDisplayEvent;
-
-            #endregion
-
-            #region REWARD AD
-
-            MaxSdkCallbacks.Rewarded.OnAdLoadedEvent += OnRewardedAdLoadedEvent;
-            MaxSdkCallbacks.Rewarded.OnAdLoadFailedEvent += OnRewardedAdLoadFailedEvent;
-            MaxSdkCallbacks.Rewarded.OnAdDisplayedEvent += OnRewardedAdDisplayedEvent;
-            MaxSdkCallbacks.Rewarded.OnAdClickedEvent += OnRewardedAdClickedEvent;
-            MaxSdkCallbacks.Rewarded.OnAdRevenuePaidEvent += OnRewardedAdRevenuePaidEvent;
-            MaxSdkCallbacks.Rewarded.OnAdHiddenEvent += OnRewardedAdHiddenEvent;
-            MaxSdkCallbacks.Rewarded.OnAdDisplayFailedEvent += OnRewardedAdFailedToDisplayEvent;
-            MaxSdkCallbacks.Rewarded.OnAdReceivedRewardEvent += OnRewardedAdReceivedRewardEvent;
-
-            #endregion
-
-            #region EVENT DISPATCHER SETUP
-
-            //Register call
-            EventDispatcherExtension.RegisterListener(EventID.Ad_Init, (n) => IDInitiation());
-            EventDispatcherExtension.RegisterListener(EventID.Ad_BannerCall, (n) => BannerAdCall());
-            EventDispatcherExtension.RegisterListener(EventID.Ad_InternCall, (n) => InterstitialCall());
-            EventDispatcherExtension.RegisterListener(EventID.Ad_RewardCall, (n) => RewardCall());
-
-            #endregion
-
-        };
-
+        base.Awake();
     }
 
     #region MAIN
-
-    //======================================= GENERAL INITIATION =======================================
-
-    /// <summary>
-    /// function to initialize all neccessary SDK
-    /// </summary>
-    private void IDInitiation()
-    {
-        //set sdk key as mandatory procedure 
-        MaxSdk.SetSdkKey(SDKKey);
-        //set user id to get player info
-        MaxSdk.SetUserId(UserID);
-        //initiate applovin sdk
-        MaxSdk.InitializeSdk();
-    }
-
-    //======================================= GENERAL INITIATION =======================================
-
-
 
     //======================================= BANNER INITIATION ==================================
 
     /// <summary>
     /// function to initate banner
     /// </summary>
-    private void BannerAdCall()
+    public void BannerAdCall()
     {
         //store given position that dev selected
         MaxSdkBase.BannerPosition _pos = (MaxSdkBase.BannerPosition)bannerPosition;
@@ -197,7 +68,7 @@ public class ADManager : Singleton<ADManager>
 
     //************************* INTERNAL EVENTS *************************
 
-    private void OnInterstitialLoadedEvent(string adUnitId, MaxSdkBase.AdInfo adInfo)
+    public void OnInterstitialLoadedEvent(string adUnitId, MaxSdkBase.AdInfo adInfo)
     {
         // Interstitial ad is ready for you to show. MaxSdk.IsInterstitialReady(adUnitId) now returns 'true'
         MaxSdk.ShowInterstitial(adUnitId);
@@ -205,7 +76,7 @@ public class ADManager : Singleton<ADManager>
         _internRetryAttempt = 0;
     }
 
-    private void OnInterstitialLoadFailedEvent(string adUnitId, MaxSdkBase.ErrorInfo errorInfo)
+    public void OnInterstitialLoadFailedEvent(string adUnitId, MaxSdkBase.ErrorInfo errorInfo)
     {
         // Interstitial ad failed to load 
         // AppLovin recommends that you retry with exponentially higher delays, up to a maximum delay (in this case 64 seconds)
@@ -216,17 +87,17 @@ public class ADManager : Singleton<ADManager>
         Invoke("LoadInterstitial", (float)retryDelay);
     }
 
-    private void OnInterstitialDisplayedEvent(string adUnitId, MaxSdkBase.AdInfo adInfo) { }
+    public void OnInterstitialDisplayedEvent(string adUnitId, MaxSdkBase.AdInfo adInfo) { }
 
-    private void OnInterstitialAdFailedToDisplayEvent(string adUnitId, MaxSdkBase.ErrorInfo errorInfo, MaxSdkBase.AdInfo adInfo)
+    public void OnInterstitialAdFailedToDisplayEvent(string adUnitId, MaxSdkBase.ErrorInfo errorInfo, MaxSdkBase.AdInfo adInfo)
     {
         // Interstitial ad failed to display. AppLovin recommends that you load the next ad.
         InterstitialCall();
     }
 
-    private void OnInterstitialClickedEvent(string adUnitId, MaxSdkBase.AdInfo adInfo) { }
+    public void OnInterstitialClickedEvent(string adUnitId, MaxSdkBase.AdInfo adInfo) { }
 
-    private void OnInterstitialHiddenEvent(string adUnitId, MaxSdkBase.AdInfo adInfo)
+    public void OnInterstitialHiddenEvent(string adUnitId, MaxSdkBase.AdInfo adInfo)
     {
         // Interstitial ad is hidden. Pre-load the next ad.
 
@@ -241,18 +112,23 @@ public class ADManager : Singleton<ADManager>
 
     public void RewardCall()
     {
-        MaxSdk.LoadRewardedAd(rewardAdUnitId);
+        MaxSdk.LoadRewardedAd(rewardAdId);
     }
 
-    private void OnRewardedAdLoadedEvent(string adUnitId, MaxSdkBase.AdInfo adInfo)
+    public void OnRewardedAdLoadedEvent(string adUnitId, MaxSdkBase.AdInfo adInfo)
     {
+        //check if ad ready
+        bool _adReady = MaxSdk.IsRewardedAdReady(adUnitId);
+        //if it not then dont execute rest
+        if (_adReady == false) return;
         // Rewarded ad is ready for you to show. MaxSdk.IsRewardedAdReady(adUnitId) now returns 'true'.
         MaxSdk.ShowRewardedAd(adUnitId);
         // Reset retry attempt
         _rewardRetryAttemp = 0;
+
     }
 
-    private void OnRewardedAdLoadFailedEvent(string adUnitId, MaxSdkBase.ErrorInfo errorInfo)
+    public void OnRewardedAdLoadFailedEvent(string adUnitId, MaxSdkBase.ErrorInfo errorInfo)
     {
         // Rewarded ad failed to load 
         // AppLovin recommends that you retry with exponentially higher delays, up to a maximum delay (in this case 64 seconds).
@@ -263,23 +139,23 @@ public class ADManager : Singleton<ADManager>
         Invoke("LoadRewardedAd", (float)retryDelay);
     }
 
-    private void OnRewardedAdDisplayedEvent(string adUnitId, MaxSdkBase.AdInfo adInfo) { }
+    public void OnRewardedAdDisplayedEvent(string adUnitId, MaxSdkBase.AdInfo adInfo) { }
 
-    private void OnRewardedAdFailedToDisplayEvent(string adUnitId, MaxSdkBase.ErrorInfo errorInfo, MaxSdkBase.AdInfo adInfo)
+    public void OnRewardedAdFailedToDisplayEvent(string adUnitId, MaxSdkBase.ErrorInfo errorInfo, MaxSdkBase.AdInfo adInfo)
     {
         // Rewarded ad failed to display. AppLovin recommends that you load the next ad.
         RewardCall();
     }
 
-    private void OnRewardedAdClickedEvent(string adUnitId, MaxSdkBase.AdInfo adInfo) { }
+    public void OnRewardedAdClickedEvent(string adUnitId, MaxSdkBase.AdInfo adInfo) { }
 
-    private void OnRewardedAdHiddenEvent(string adUnitId, MaxSdkBase.AdInfo adInfo)
+    public void OnRewardedAdHiddenEvent(string adUnitId, MaxSdkBase.AdInfo adInfo)
     {
         // Rewarded ad is hidden. Pre-load the next ad
 
     }
 
-    private void OnRewardedAdReceivedRewardEvent(string adUnitId, MaxSdk.Reward reward, MaxSdkBase.AdInfo adInfo)
+    public void OnRewardedAdReceivedRewardEvent(string adUnitId, MaxSdk.Reward reward, MaxSdkBase.AdInfo adInfo)
     {
         // The rewarded ad displayed and the user should receive the reward.
 
@@ -287,7 +163,7 @@ public class ADManager : Singleton<ADManager>
         if (rewardAction != null) rewardAction();
     }
 
-    private void OnRewardedAdRevenuePaidEvent(string adUnitId, MaxSdkBase.AdInfo adInfo)
+    public void OnRewardedAdRevenuePaidEvent(string adUnitId, MaxSdkBase.AdInfo adInfo)
     {
         // Ad revenue paid. Use this callback to track user revenue.
 

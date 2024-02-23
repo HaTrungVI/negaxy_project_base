@@ -7,7 +7,6 @@ public class EventDispatcher : Singleton<EventDispatcher>
 {
     private Dictionary<EventID, Action<object>> _events = new Dictionary<EventID, Action<object>>();
 
-
     // Register to listen for eventID, callback will be invoke when event with eventID be raise
     public void RegisterListener(EventID eventID, Action<object> callback)
     {
