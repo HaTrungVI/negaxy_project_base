@@ -35,27 +35,51 @@ public static class UMP
 
     }
 
+    /// <summary>
+    /// function to load consent form
+    /// </summary>
+    /// <param name="consentForm"> consent form </param>
+    /// <param name="error"> form error </param>
     private static void OnLoadConsentForm(ConsentForm consentForm, FormError error)
     {
+        //consent form
         ConsentForm _consentForm;
 
+        //if there is an error while getting a form
         if (error != null)
         {
+            //log it out, use firebase
             Debug.LogError(error);
+            //stop execute
             return;
         }
+
+        //success
+
+        //get consent form
         _consentForm = consentForm;
+
+        //make sure if it is required to get consent
         if (ConsentInformation.ConsentStatus == ConsentStatus.Required)
         {
+            //show the form with error check function
             _consentForm.Show(OnShowForm);
         }
     }
 
+
+    /// <summary>
+    /// function to show form
+    /// </summary>
+    /// <param name="error"> error from getting form </param>
     private static void OnShowForm(FormError error)
     {
+        //if  there is tourble getting form
         if (error != null)
         {
+            //log our error use firebase
             Debug.LogError(error);
+            //stop execute
             return;
         }
     }
