@@ -1,7 +1,12 @@
 using UnityEngine;
 using AppsFlyerSDK;
-using Firebase;
+using Firebase.RemoteConfig;
+using Firebase.Extensions;
+using System;
+using System.Threading;
 using Sirenix.OdinInspector;
+using System.Threading.Tasks;
+
 
 namespace QuocAnh.SDK
 {
@@ -92,9 +97,13 @@ namespace QuocAnh.SDK
                 {
                         MaxSDKInit();
                         AdFlyerInit();
+                        FireBaseRemoteInit();
                         Destroy(this.gameObject);
                 }
 
+                /// <summary>
+                /// MAX SDK Setup
+                /// </summary>
                 private void MaxSDKInit()
                 {
 
@@ -197,7 +206,9 @@ namespace QuocAnh.SDK
 
                 }
 
-
+                /// <summary>
+                /// AD FLYER SETUP
+                /// </summary>
                 private void AdFlyerInit()
                 {
 
@@ -209,6 +220,59 @@ namespace QuocAnh.SDK
                         }
 
                         if (AD_DontDestroy) DontDestroyOnLoad(ADManager.Instance);
+
+                }
+
+                /// <summary>
+                /// FIREBASE CHECK DEPENDENCY
+                /// </summary>
+                private void FireBaseRemoteInit()
+                {
+                        //store firebase dependency sattus
+                        Firebase.DependencyStatus _dependencyStatus = Firebase.DependencyStatus.UnavailableOther;
+                        //checking firebase dependency
+                        Firebase.FirebaseApp.CheckDependenciesAsync().ContinueWithOnMainThread(_task =>
+                        {
+                                //storing result
+                                _dependencyStatus = _task.Result;
+                                //if success
+                                if (_dependencyStatus == Firebase.DependencyStatus.Available)
+                                {
+                                        Debug.Log("Feteched Firebase dependency | Status:  " + _dependencyStatus);
+                                        //check config of remote
+                                        FireBaseRemoteCheckConfig();
+                                }
+                                else //if failed
+                                {
+                                        Debug.LogError("Could not get dependencies for firebase " + _dependencyStatus);
+                                }
+
+                        });
+                }
+
+                /// <summary>
+                /// FIREBASE REMOTE SETUP
+                /// </summary>
+                private void FireBaseRemoteCheckConfig()
+                {
+                        //get remote config
+                        FirebaseRemoteConfig _fireBaseRemoteConfig = FirebaseRemoteConfig.DefaultInstance;
+                        //fetch config
+                        _fireBaseRemoteConfig.FetchAndActivateAsync().ContinueWithOnMainThread(fetchTask =>
+                        {
+                                //if task fetch not complete
+                                if (!fetchTask.IsCompleted)
+                                {
+                                        //log it
+                                        Debug.Log("Fetch Failed");
+                                        //stop execution
+                                        return;
+                                }
+
+                                Debug.Log("FetchSuccess");
+
+
+                        });
 
                 }
         }
