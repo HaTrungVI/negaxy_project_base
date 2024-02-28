@@ -95,9 +95,14 @@ namespace QuocAnh.SDK
 
                 public void SDKInitiate()
                 {
+                        //ADS
                         MaxSDKInit();
+                        //APPFLYER
                         AdFlyerInit();
+                        //FIRE BASE
                         FireBaseRemoteInit();
+                        //UMP
+                        UMP.Init();
                         Destroy(this.gameObject);
                 }
 

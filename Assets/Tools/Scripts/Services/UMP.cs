@@ -4,10 +4,10 @@ using UnityEngine;
 using GoogleMobileAds.Ump;
 using GoogleMobileAds.Ump.Api;
 
-public class UMP : MonoBehaviour
+public static class UMP
 {
     // Start is called before the first frame update
-    void Start()
+    public static void Init()
     {
         // Create a ConsentRequestParameters object.
         ConsentRequestParameters request = new ConsentRequestParameters();
@@ -16,7 +16,7 @@ public class UMP : MonoBehaviour
 
     }
 
-    void OnConsentInfoUpdated(FormError consentError)
+    private static void OnConsentInfoUpdated(FormError consentError)
     {
         if (consentError != null)
         {
@@ -32,29 +32,31 @@ public class UMP : MonoBehaviour
             ConsentForm.Load(OnLoadConsentForm);
         }
 
-        void OnLoadConsentForm(ConsentForm consentForm, FormError error)
-        {
-            ConsentForm _consentForm;
 
-            if (error != null)
-            {
-                Debug.LogError(error);
-                return;
-            }
-            _consentForm = consentForm;
-            if (ConsentInformation.ConsentStatus == ConsentStatus.Required)
-            {
-                _consentForm.Show(OnShowForm);
-            }
+    }
+
+    private static void OnLoadConsentForm(ConsentForm consentForm, FormError error)
+    {
+        ConsentForm _consentForm;
+
+        if (error != null)
+        {
+            Debug.LogError(error);
+            return;
         }
-
-        void OnShowForm(FormError error)
+        _consentForm = consentForm;
+        if (ConsentInformation.ConsentStatus == ConsentStatus.Required)
         {
-            if (error != null)
-            {
-                Debug.LogError(error);
-                return;
-            }
+            _consentForm.Show(OnShowForm);
+        }
+    }
+
+    private static void OnShowForm(FormError error)
+    {
+        if (error != null)
+        {
+            Debug.LogError(error);
+            return;
         }
     }
 
